@@ -1,0 +1,246 @@
+body {
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: left;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: left;
+  margin-bottom: 0.5rem;
+}
+
+.header h1 {
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.header p {
+  color: #666;
+  font-size: 1rem;
+}
+
+.controls {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-group label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.control-group select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #d3dae6;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.view-toggle button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.view-toggle button.active {
+  background-color: #646cff;
+  border-color: #646cff;
+}
+
+.content {
+  margin-bottom: 0.5rem;
+}
+
+.charts-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.chart-container {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #d3dae6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.chart-view h2,
+.table-view h2 {
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chart-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.query-text {
+  color: #ccc;
+  font-family: 'Courier New', monospace;
+  flex: 1;
+}
+
+.query-count {
+  color: #646cff;
+  font-weight: bold;
+  margin-left: 1rem;
+}
+
+.bar-container {
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: linear-gradient(90deg, #646cff, #535bf2);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.queries-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.queries-table th,
+.queries-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.queries-table th {
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  color: #fff;
+}
+
+.queries-table td {
+  color: #ccc;
+}
+
+.query-cell {
+  max-width: 400px;
+}
+
+.query-cell code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.summary-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.summary-card h3 {
+  margin: 0 0 0.5rem 0;
+  color: #ccc;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.summary-card p {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #646cff;
+}
+
+@media (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .view-toggle {
+    margin-left: 0;
+    justify-content: center;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .queries-table {
+    font-size: 0.8rem;
+  }
+  
+  .query-cell {
+    max-width: 200px;
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "query-insights",
+  "version": "1.0.0",
+  "description": "Top N queries analysis and insights dashboard",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "query",
+    "analytics",
+    "insights",
+    "dashboard"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "highcharts": "^12.5.0",
+    "highcharts-react-official": "^3.2.3",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2"
+  }
+}
