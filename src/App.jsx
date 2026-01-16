@@ -5,8 +5,15 @@ import QueryList from './components/QueryList'
 import './App.css'
 
 function App() {
-  const [topN, setTopN] = useState(10)
-  const [timeRange, setTimeRange] = useState('24h')
+  const [topN] = useState(10)
+  const [startDate, setStartDate] = useState(() => {
+    const date = new Date()
+    date.setHours(date.getHours() - 24)
+    return date.toISOString().slice(0, 16)
+  })
+  const [endDate, setEndDate] = useState(() => {
+    return new Date().toISOString().slice(0, 16)
+  })
   const [selectedCell, setSelectedCell] = useState(null)
   const [showDrillDown, setShowDrillDown] = useState(false)
   const [avgMetric, setAvgMetric] = useState('latency')
@@ -20,6 +27,31 @@ function App() {
   const [heatmapMetric, setHeatmapMetric] = useState('latency')
   const [hoveredCell, setHoveredCell] = useState(null)
   const [activeTab, setActiveTab] = useState('topN')
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // Handle refresh
+  const handleRefresh = () => {
+    setIsRefreshing(true)
+    // Simulate data refresh
+    setTimeout(() => {
+      setIsRefreshing(false)
+    }, 1000)
+  }
+
+  // Format date for display
+  const formatDateDisplay = (dateStr) => {
+    const date = new Date(dateStr)
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      fractionalSecondDigits: 3,
+      hour12: false
+    }).replace(',', ' @')
+  }
 
   // Metrics data
   const metricsData = {
@@ -933,53 +965,82 @@ function App() {
       </header>
 
       <div className="controls">
-        <div className="control-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label htmlFor="topN" style={{ margin: 0, fontSize: '14px', color: '#1a1a1a', whiteSpace: 'nowrap' }}>Show Top:</label>
-          <select 
-            id="topN" 
-            value={topN} 
-            onChange={(e) => setTopN(Number(e.target.value))}
-            style={{
-              padding: '6px 8px',
-              fontSize: '14px',
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '16px'
+        }}>
+          {/* Date Range Picker */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '8px 12px',
               border: '1px solid #d3dae6',
               borderRadius: '4px',
               backgroundColor: '#ffffff',
-              color: '#1a1a1a',
-              cursor: 'pointer',
-              outline: 'none'
-            }}
-          >
-            <option value={5}>5 queries</option>
-            <option value={10}>10 queries</option>
-            <option value={25}>25 queries</option>
-            <option value={50}>50 queries</option>
-            <option value={100}>100 queries</option>
-          </select>
-        </div>
+              cursor: 'pointer'
+            }}>
+              <span style={{ fontSize: '18px', color: '#0079D3' }}>📅</span>
+              <span style={{ fontSize: '14px', color: '#1a1a1a', whiteSpace: 'nowrap' }}>
+                {formatDateDisplay(startDate)} → now
+              </span>
+            </div>
+            
+            {/* Hidden date inputs for functionality */}
+            <div style={{ display: 'none' }}>
+              <input
+                type="datetime-local"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+              <input
+                type="datetime-local"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
 
-        <div className="control-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label htmlFor="timeRange" style={{ margin: 0, fontSize: '14px', color: '#1a1a1a', whiteSpace: 'nowrap' }}>Time Range:</label>
-          <select 
-            id="timeRange" 
-            value={timeRange} 
-            onChange={(e) => setTimeRange(e.target.value)}
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
             style={{
-              padding: '6px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
               fontSize: '14px',
-              border: '1px solid #d3dae6',
+              fontWeight: '500',
+              border: '1px solid #0079D3',
               borderRadius: '4px',
               backgroundColor: '#ffffff',
-              color: '#1a1a1a',
-              cursor: 'pointer',
-              outline: 'none'
+              color: '#0079D3',
+              cursor: isRefreshing ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              opacity: isRefreshing ? 0.6 : 1,
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => {
+              if (!isRefreshing) {
+                e.currentTarget.style.backgroundColor = '#f0f8ff'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ffffff'
             }}
           >
-            <option value="1h">Last Hour</option>
-            <option value="24h">Last 24 Hours</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
-          </select>
+            <span style={{ 
+              fontSize: '16px',
+              display: 'inline-block',
+              animation: isRefreshing ? 'spin 1s linear infinite' : 'none'
+            }}>
+              🔄
+            </span>
+            Refresh
+          </button>
         </div>
       </div>
 
