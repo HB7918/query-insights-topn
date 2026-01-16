@@ -12,34 +12,32 @@ const QueryList = () => {
   const [pageSize, setPageSize] = useState(10)
 
   const filteringProperties = [
-    { key: 'queryType', propertyLabel: 'Query Type', type: 'enum' },
-    { key: 'searchType', propertyLabel: 'Search Type', type: 'enum' },
-    { key: 'node', propertyLabel: 'Node', type: 'enum' },
-    { key: 'index', propertyLabel: 'Index', type: 'enum' },
-    { key: 'wlmGroup', propertyLabel: 'WLM Group', type: 'enum' },
+    { key: 'type', propertyLabel: 'Type', type: 'enum' },
+    { key: 'queryCount', propertyLabel: 'Query Count', type: 'number' },
+    { key: 'timestamp', propertyLabel: 'Timestamp', type: 'date' },
     { key: 'latency', propertyLabel: 'Latency', type: 'number' },
-    { key: 'cpu', propertyLabel: 'CPU', type: 'number' },
-    { key: 'memory', propertyLabel: 'Memory', type: 'number' },
-    { key: 'timestamp', propertyLabel: 'Date and Time', type: 'date' },
+    { key: 'cpuTime', propertyLabel: 'CPU Time', type: 'number' },
+    { key: 'memoryUsage', propertyLabel: 'Memory Usage', type: 'number' },
+    { key: 'indices', propertyLabel: 'Indices', type: 'enum' },
+    { key: 'searchType', propertyLabel: 'Search Type', type: 'enum' },
+    { key: 'coordinatorNode', propertyLabel: 'Coordinator Node', type: 'enum' },
+    { key: 'totalShards', propertyLabel: 'Total Shards', type: 'number' },
   ]
 
   const filteringOptions = [
-    { propertyKey: 'queryType', value: 'Group' },
-    { propertyKey: 'queryType', value: 'Search' },
-    { propertyKey: 'queryType', value: 'Aggregation' },
-    { propertyKey: 'queryType', value: 'Match' },
+    { propertyKey: 'type', value: 'Group' },
+    { propertyKey: 'type', value: 'Search' },
+    { propertyKey: 'type', value: 'Aggregation' },
+    { propertyKey: 'type', value: 'Match' },
     { propertyKey: 'searchType', value: 'DFS' },
     { propertyKey: 'searchType', value: 'Query Then Fetch' },
     { propertyKey: 'searchType', value: 'Query And Fetch' },
-    { propertyKey: 'node', value: 'node1' },
-    { propertyKey: 'node', value: 'node2' },
-    { propertyKey: 'node', value: 'node3' },
-    { propertyKey: 'index', value: 'index1' },
-    { propertyKey: 'index', value: 'index2' },
-    { propertyKey: 'index', value: 'index3' },
-    { propertyKey: 'wlmGroup', value: 'group1' },
-    { propertyKey: 'wlmGroup', value: 'group2' },
-    { propertyKey: 'wlmGroup', value: 'group3' },
+    { propertyKey: 'coordinatorNode', value: 'node1' },
+    { propertyKey: 'coordinatorNode', value: 'node2' },
+    { propertyKey: 'coordinatorNode', value: 'node3' },
+    { propertyKey: 'indices', value: 'index1' },
+    { propertyKey: 'indices', value: 'index2' },
+    { propertyKey: 'indices', value: 'index3' },
   ]
 
   const operators = [
@@ -57,23 +55,36 @@ const QueryList = () => {
 
   // Generate sample data
   const generateSampleData = () => {
-    const queryTypes = ['Group', 'Search', 'Aggregation', 'Match']
+    const types = ['Group', 'Search', 'Aggregation', 'Match']
     const searchTypes = ['DFS', 'Query Then Fetch', 'Query And Fetch']
     const nodes = ['node1', 'node2', 'node3']
     const indices = ['index1', 'index2', 'index3']
-    const wlmGroups = ['group1', 'group2', 'group3']
+    
+    // Helper function to generate UUID-like ID
+    const generateUUID = () => {
+      const hex = '0123456789abcdef'
+      const segments = [8, 4, 4, 4, 12]
+      return segments.map(len => {
+        let segment = ''
+        for (let i = 0; i < len; i++) {
+          segment += hex[Math.floor(Math.random() * 16)]
+        }
+        return segment
+      }).join('-')
+    }
     
     return Array.from({ length: 50 }, (_, i) => ({
-      id: `q${i + 1}`,
-      queryType: queryTypes[Math.floor(Math.random() * queryTypes.length)],
-      searchType: searchTypes[Math.floor(Math.random() * searchTypes.length)],
-      node: nodes[Math.floor(Math.random() * nodes.length)],
-      index: indices[Math.floor(Math.random() * indices.length)],
-      wlmGroup: wlmGroups[Math.floor(Math.random() * wlmGroups.length)],
-      latency: `${(Math.random() * 1000).toFixed(2)} ms`,
-      cpu: `${(Math.random() * 100).toFixed(2)}%`,
-      memory: `${(Math.random() * 1024).toFixed(0)} MB`,
+      id: generateUUID(),
+      type: types[Math.floor(Math.random() * types.length)],
+      queryCount: Math.floor(Math.random() * 1000) + 1,
       timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString(),
+      latency: `${(Math.random() * 1000).toFixed(2)} ms`,
+      cpuTime: `${(Math.random() * 100).toFixed(2)} ms`,
+      memoryUsage: `${(Math.random() * 1024).toFixed(0)} MB`,
+      indices: indices[Math.floor(Math.random() * indices.length)],
+      searchType: searchTypes[Math.floor(Math.random() * searchTypes.length)],
+      coordinatorNode: nodes[Math.floor(Math.random() * nodes.length)],
+      totalShards: Math.floor(Math.random() * 20) + 1,
     }))
   }
 
@@ -524,15 +535,17 @@ const QueryList = () => {
         }}>
           <thead>
             <tr style={{ backgroundColor: '#f5f7fa' }}>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>ID</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Query Type</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Search Type</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Node</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Index</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>WLM Group</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Id</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Type</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Query Count</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Timestamp</th>
               <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Latency</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>CPU</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Memory</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>CPU Time</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Memory Usage</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Indices</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Search Type</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Coordinator Node</th>
+              <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', borderBottom: '2px solid #d3dae6', fontWeight: '600', fontSize: '12px' }}>Total Shards</th>
             </tr>
           </thead>
           <tbody>
@@ -546,15 +559,30 @@ const QueryList = () => {
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f7fa'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.id}</td>
-                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.queryType}</td>
-                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.searchType}</td>
-                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.node}</td>
-                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.index}</td>
-                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.wlmGroup}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>
+                  <a 
+                    href={`#/query/${item.id}`} 
+                    style={{ 
+                      color: '#0079D3', 
+                      textDecoration: 'none',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                    onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  >
+                    {item.id}
+                  </a>
+                </td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.type}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.queryCount}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{new Date(item.timestamp).toLocaleString()}</td>
                 <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.latency}</td>
-                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.cpu}</td>
-                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.memory}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.cpuTime}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.memoryUsage}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.indices}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.searchType}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.coordinatorNode}</td>
+                <td style={{ padding: '12px', color: '#1a1a1a' }}>{item.totalShards}</td>
               </tr>
             ))}
           </tbody>

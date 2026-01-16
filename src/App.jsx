@@ -21,7 +21,7 @@ function App() {
   const [p99Metric, setP99Metric] = useState('latency')
   const [nodeViewMode, setNodeViewMode] = useState('chart')
   const [indexViewMode, setIndexViewMode] = useState('chart')
-  const [performanceViewMode, setPerformanceViewMode] = useState('heatmap')
+  const [performanceViewMode, setPerformanceViewMode] = useState('line')
   const [performanceMetric, setPerformanceMetric] = useState('latency')
   const [heatmapDimension, setHeatmapDimension] = useState('index')
   const [heatmapMetric, setHeatmapMetric] = useState('latency')
@@ -143,13 +143,13 @@ function App() {
       backgroundColor: '#ffffff',
       border: '1px solid #d3dae6',
       borderRadius: '8px',
-      padding: '20px',
-      minWidth: '200px',
-      flex: '0 0 auto',
+      padding: '16px',
+      minWidth: '150px',
+      flex: '1 1 0',
       boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
     }}>
       <div style={{ 
-        fontSize: '12px', 
+        fontSize: '11px', 
         color: '#69707d', 
         marginBottom: '4px',
         textTransform: 'uppercase',
@@ -159,15 +159,15 @@ function App() {
       </div>
       {subtitle && (
         <div style={{ 
-          fontSize: '10px', 
+          fontSize: '9px', 
           color: '#98a2b3', 
-          marginBottom: '12px'
+          marginBottom: '10px'
         }}>
           {subtitle}
         </div>
       )}
       <div style={{ 
-        fontSize: '32px', 
+        fontSize: '28px', 
         fontWeight: '600', 
         color: '#1a1a1a',
         display: 'flex',
@@ -175,7 +175,7 @@ function App() {
         gap: '4px'
       }}>
         {value}
-        <span style={{ fontSize: '16px', fontWeight: '400', color: '#69707d' }}>
+        <span style={{ fontSize: '14px', fontWeight: '400', color: '#69707d' }}>
           {unit}
         </span>
       </div>
@@ -1048,183 +1048,117 @@ function App() {
         <div className="charts-view">
             {/* Metrics Cards Section */}
             <div style={{ marginBottom: '0.5rem' }}>
-              <h3 style={{ color: '#1a1a1a', marginBottom: '0.5rem', fontSize: '18px' }}>
-                Key Metrics - Top {topN} Queries
-              </h3>
-              
               {/* All Metrics in One Row */}
               <div style={{ 
                 display: 'flex',
-                gap: '16px',
-                overflowX: 'auto',
-                paddingBottom: '10px'
+                gap: '12px',
+                width: '100%'
               }}>
                 <MetricCard
-                  title="Average Latency"
-                  subtitle={`Top ${topN} queries`}
-                  value={metricsData.avg.latency.value}
-                  unit={metricsData.avg.latency.unit}
+                  title="P90 Latency"
+                  subtitle="Average"
+                  value={metricsData.p90.latency.value}
+                  unit={metricsData.p90.latency.unit}
                 />
                 <MetricCard
-                  title="Average CPU Time"
-                  subtitle={`Top ${topN} queries`}
-                  value={metricsData.avg.cpu.value}
-                  unit={metricsData.avg.cpu.unit}
+                  title="P90 CPU Time"
+                  subtitle="Average"
+                  value={metricsData.p90.cpu.value}
+                  unit={metricsData.p90.cpu.unit}
                 />
                 <MetricCard
-                  title="Average Memory"
-                  subtitle={`Top ${topN} queries`}
-                  value={metricsData.avg.memory.value}
-                  unit={metricsData.avg.memory.unit}
+                  title="P90 Memory"
+                  subtitle="Average"
+                  value={metricsData.p90.memory.value}
+                  unit={metricsData.p90.memory.unit}
                 />
-                <CombinedMetricCard
-                  title="P90"
-                  metrics={metricsData.p90}
-                  selectedMetric={p90Metric}
-                  onMetricChange={setP90Metric}
+                <MetricCard
+                  title="P99 Latency"
+                  subtitle="Average"
+                  value={metricsData.p99.latency.value}
+                  unit={metricsData.p99.latency.unit}
                 />
-                <CombinedMetricCard
-                  title="P99"
-                  metrics={metricsData.p99}
-                  selectedMetric={p99Metric}
-                  onMetricChange={setP99Metric}
+                <MetricCard
+                  title="P99 CPU Time"
+                  subtitle="Average"
+                  value={metricsData.p99.cpu.value}
+                  unit={metricsData.p99.cpu.unit}
+                />
+                <MetricCard
+                  title="P99 Memory"
+                  subtitle="Average"
+                  value={metricsData.p99.memory.value}
+                  unit={metricsData.p99.memory.unit}
                 />
               </div>
             </div>
 
-            <div className="charts-grid">
-              <div className="chart-container" style={{ marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <h4 style={{ margin: 0, color: '#1a1a1a', fontSize: '16px', fontWeight: '600' }}>
-                    Queries by Node
-                  </h4>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button
-                      onClick={() => setNodeViewMode('chart')}
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        border: '1px solid #d3dae6',
-                        borderRadius: '4px',
-                        backgroundColor: nodeViewMode === 'chart' ? '#646cff' : '#ffffff',
-                        color: nodeViewMode === 'chart' ? '#ffffff' : '#1a1a1a',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Chart
-                    </button>
-                    <button
-                      onClick={() => setNodeViewMode('table')}
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        border: '1px solid #d3dae6',
-                        borderRadius: '4px',
-                        backgroundColor: nodeViewMode === 'table' ? '#646cff' : '#ffffff',
-                        color: nodeViewMode === 'table' ? '#ffffff' : '#1a1a1a',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Table
-                    </button>
-                  </div>
+            {/* Queries by Node - Full Width */}
+            <div className="chart-container" style={{ marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <h4 style={{ margin: 0, color: '#1a1a1a', fontSize: '16px', fontWeight: '600' }}>
+                  Queries by Node
+                </h4>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <button
+                    onClick={() => setNodeViewMode('chart')}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      border: '1px solid #d3dae6',
+                      borderRadius: '4px',
+                      backgroundColor: nodeViewMode === 'chart' ? '#646cff' : '#ffffff',
+                      color: nodeViewMode === 'chart' ? '#ffffff' : '#1a1a1a',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Chart
+                  </button>
+                  <button
+                    onClick={() => setNodeViewMode('table')}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      border: '1px solid #d3dae6',
+                      borderRadius: '4px',
+                      backgroundColor: nodeViewMode === 'table' ? '#646cff' : '#ffffff',
+                      color: nodeViewMode === 'table' ? '#ffffff' : '#1a1a1a',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Table
+                  </button>
                 </div>
-                {nodeViewMode === 'chart' ? (
-                  <HighchartsReact highcharts={Highcharts} options={nodeChart} />
-                ) : (
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid #d3dae6' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Node</th>
-                        <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Query Count</th>
-                        <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Percentage</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {nodeData.map((item, index) => {
-                        const total = nodeData.reduce((sum, d) => sum + d.y, 0)
-                        const percentage = ((item.y / total) * 100).toFixed(1)
-                        return (
-                          <tr key={index} style={{ borderBottom: '1px solid #f5f7fa' }}>
-                            <td style={{ padding: '12px', color: '#1a1a1a', fontSize: '12px' }}>
-                              <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: item.color, marginRight: '8px', borderRadius: '2px' }}></span>
-                              {item.name}
-                            </td>
-                            <td style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px' }}>{item.y}</td>
-                            <td style={{ padding: '12px', textAlign: 'right', color: '#69707d', fontSize: '12px' }}>{percentage}%</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                )}
               </div>
-              <div className="chart-container" style={{ marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <h4 style={{ margin: 0, color: '#1a1a1a', fontSize: '16px', fontWeight: '600' }}>
-                    Queries by Index
-                  </h4>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button
-                      onClick={() => setIndexViewMode('chart')}
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        border: '1px solid #d3dae6',
-                        borderRadius: '4px',
-                        backgroundColor: indexViewMode === 'chart' ? '#646cff' : '#ffffff',
-                        color: indexViewMode === 'chart' ? '#ffffff' : '#1a1a1a',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Chart
-                    </button>
-                    <button
-                      onClick={() => setIndexViewMode('table')}
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        border: '1px solid #d3dae6',
-                        borderRadius: '4px',
-                        backgroundColor: indexViewMode === 'table' ? '#646cff' : '#ffffff',
-                        color: indexViewMode === 'table' ? '#ffffff' : '#1a1a1a',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Table
-                    </button>
-                  </div>
-                </div>
-                {indexViewMode === 'chart' ? (
-                  <HighchartsReact highcharts={Highcharts} options={indexChart} />
-                ) : (
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid #d3dae6' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Index</th>
-                        <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Query Count</th>
-                        <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Percentage</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {indexData.map((item, index) => {
-                        const total = indexData.reduce((sum, d) => sum + d.y, 0)
-                        const percentage = ((item.y / total) * 100).toFixed(1)
-                        return (
-                          <tr key={index} style={{ borderBottom: '1px solid #f5f7fa' }}>
-                            <td style={{ padding: '12px', color: '#1a1a1a', fontSize: '12px' }}>
-                              <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: item.color, marginRight: '8px', borderRadius: '2px' }}></span>
-                              {item.name}
-                            </td>
-                            <td style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px' }}>{item.y}</td>
-                            <td style={{ padding: '12px', textAlign: 'right', color: '#69707d', fontSize: '12px' }}>{percentage}%</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+              {nodeViewMode === 'chart' ? (
+                <HighchartsReact highcharts={Highcharts} options={nodeChart} />
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #d3dae6' }}>
+                      <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Node</th>
+                      <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Query Count</th>
+                      <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nodeData.map((item, index) => {
+                      const total = nodeData.reduce((sum, d) => sum + d.y, 0)
+                      const percentage = ((item.y / total) * 100).toFixed(1)
+                      return (
+                        <tr key={index} style={{ borderBottom: '1px solid #f5f7fa' }}>
+                          <td style={{ padding: '12px', color: '#1a1a1a', fontSize: '12px' }}>
+                            <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: item.color, marginRight: '8px', borderRadius: '2px' }}></span>
+                            {item.name}
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px' }}>{item.y}</td>
+                          <td style={{ padding: '12px', textAlign: 'right', color: '#69707d', fontSize: '12px' }}>{percentage}%</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
 
             <div className="chart-container" style={{ marginBottom: '0.5rem' }}>
@@ -1296,20 +1230,6 @@ function App() {
                   )}
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button
-                      onClick={() => setPerformanceViewMode('heatmap')}
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        border: '1px solid #d3dae6',
-                        borderRadius: '4px',
-                        backgroundColor: performanceViewMode === 'heatmap' ? '#646cff' : '#ffffff',
-                        color: performanceViewMode === 'heatmap' ? '#ffffff' : '#1a1a1a',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Heatmap
-                    </button>
-                    <button
                       onClick={() => setPerformanceViewMode('line')}
                       style={{
                         padding: '6px 12px',
@@ -1322,6 +1242,20 @@ function App() {
                       }}
                     >
                       Line Chart
+                    </button>
+                    <button
+                      onClick={() => setPerformanceViewMode('heatmap')}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        border: '1px solid #d3dae6',
+                        borderRadius: '4px',
+                        backgroundColor: performanceViewMode === 'heatmap' ? '#646cff' : '#ffffff',
+                        color: performanceViewMode === 'heatmap' ? '#ffffff' : '#1a1a1a',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Heatmap
                     </button>
                   </div>
                 </div>
