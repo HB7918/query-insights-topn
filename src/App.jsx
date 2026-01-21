@@ -1101,79 +1101,81 @@ function App() {
       </header>
 
       <div className="controls">
-        {/* Search Bar - Full Width Row */}
-        <div style={{ marginBottom: '12px', width: '100%', maxWidth: '1200px' }}>
-          <div style={{ position: 'relative' }}>
-            <input
-              type="text"
-              placeholder="Search queries..."
-              value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value)
-                setIsPopoverOpen(true)
-                if (!selectedProperty) setCurrentStep('properties')
-              }}
-              onFocus={() => {
-                setIsPopoverOpen(true)
-                if (!selectedProperty) setCurrentStep('properties')
-              }}
-              style={{
-                width: '100%',
-                padding: '12px 12px 12px 42px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #d3dae6',
-                borderRadius: '4px',
-                color: '#1a1a1a',
-                fontSize: '16px',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-            <span style={{
-              position: 'absolute',
-              left: '14px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              fontSize: '20px',
-              color: '#69707d'
-            }}>
-              🔍
-            </span>
-
-            {/* Popover - Aligned to search box */}
-            {isPopoverOpen && (
-              <>
-                <div
-                  style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 999
-                  }}
-                  onClick={() => {
-                    setIsPopoverOpen(false)
-                    setCurrentStep('properties')
-                    setSelectedProperty(null)
-                    setSelectedOperator(null)
-                    setValueInput('')
-                  }}
-                />
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  marginTop: '4px',
+        {/* All Filters in One Row */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '16px' }}>
+          {/* Search Bar */}
+          <div style={{ flex: '1 1 auto', minWidth: '300px', maxWidth: '600px' }}>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                placeholder="Search queries..."
+                value={searchValue}
+                onChange={(e) => {
+                  setSearchValue(e.target.value)
+                  setIsPopoverOpen(true)
+                  if (!selectedProperty) setCurrentStep('properties')
+                }}
+                onFocus={() => {
+                  setIsPopoverOpen(true)
+                  if (!selectedProperty) setCurrentStep('properties')
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 8px 8px 36px',
                   backgroundColor: '#ffffff',
                   border: '1px solid #d3dae6',
                   borderRadius: '4px',
-                  maxHeight: '400px',
-                  overflow: 'auto',
-                  zIndex: 1000,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                }}>
+                  color: '#1a1a1a',
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <span style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: '16px',
+                color: '#69707d'
+              }}>
+                🔍
+              </span>
+
+              {/* Popover - Aligned to search box */}
+              {isPopoverOpen && (
+                <>
+                  <div
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 999
+                    }}
+                    onClick={() => {
+                      setIsPopoverOpen(false)
+                      setCurrentStep('properties')
+                      setSelectedProperty(null)
+                      setSelectedOperator(null)
+                      setValueInput('')
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    marginTop: '4px',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #d3dae6',
+                    borderRadius: '4px',
+                    maxHeight: '400px',
+                    overflow: 'auto',
+                    zIndex: 1000,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  }}>
                   {currentStep === 'properties' && (
                     <>
                       <div style={{ padding: '8px 12px', borderBottom: '1px solid #d3dae6', backgroundColor: '#f5f7fa' }}>
@@ -1315,54 +1317,52 @@ function App() {
                       )}
                     </>
                   )}
-                </div>
-              </>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Tokens - Below search bar */}
+            {tokens.length > 0 && (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '8px' }}>
+                {tokens.map((token, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      backgroundColor: '#E6F1FF',
+                      border: '1px solid #0079D3',
+                      borderRadius: '4px',
+                      padding: '4px 8px',
+                      fontSize: '12px',
+                      color: '#0079D3',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {token.property.propertyLabel} {token.operator.symbol} {token.value}
+                    <button
+                      onClick={() => handleRemoveToken(index)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#0079D3',
+                        cursor: 'pointer',
+                        padding: '0',
+                        fontSize: '16px',
+                        lineHeight: '1',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
             )}
           </div>
 
-          {/* Tokens - Below search bar */}
-          {tokens.length > 0 && (
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '8px' }}>
-              {tokens.map((token, index) => (
-                <span
-                  key={index}
-                  style={{
-                    backgroundColor: '#E6F1FF',
-                    border: '1px solid #0079D3',
-                    borderRadius: '4px',
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    color: '#0079D3',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontWeight: '500'
-                  }}
-                >
-                  {token.property.propertyLabel} {token.operator.symbol} {token.value}
-                  <button
-                    onClick={() => handleRemoveToken(index)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#0079D3',
-                      cursor: 'pointer',
-                      padding: '0',
-                      fontSize: '16px',
-                      lineHeight: '1',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Date Range, Refresh, and Clear Filters - Second Row */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
           {/* Date Range Picker */}
           <div style={{ 
             display: 'flex', 
@@ -1376,7 +1376,7 @@ function App() {
             whiteSpace: 'nowrap',
             flexShrink: 0
           }}>
-            <span style={{ fontSize: '18px', color: '#0079D3' }}>📅</span>
+            <span style={{ fontSize: '16px', color: '#0079D3' }}>📅</span>
             <span style={{ fontSize: '14px', color: '#1a1a1a' }}>
               {formatDateDisplay(startDate)} → now
             </span>
