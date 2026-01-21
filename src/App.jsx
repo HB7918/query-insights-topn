@@ -25,6 +25,7 @@ function App() {
   const [performanceMetric, setPerformanceMetric] = useState('latency')
   const [heatmapDimension, setHeatmapDimension] = useState('index')
   const [heatmapMetric, setHeatmapMetric] = useState('latency')
+  const [heatmapAggregation, setHeatmapAggregation] = useState('max')
   const [hoveredCell, setHoveredCell] = useState(null)
   const [activeTab, setActiveTab] = useState('topN')
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -656,35 +657,52 @@ function App() {
 
     const timeLabels = ['10:00', '10:15', '10:30', '10:45', '11:00', '11:15', '11:30', '11:45', '12:00', '12:15', '12:30', '12:45', '13:00']
     
-    // Generate heatmap data based on selected dimension and metric - memoized to prevent regeneration
+    // Generate heatmap data based on selected dimension, metric, and aggregation - memoized to prevent regeneration
     const heatmapData = useMemo(() => {
       const rows = dimensionData[heatmapDimension]
       
       // Seeded random generator for consistent values
-      const generateValue = (rowIdx, colIdx, metric) => {
+      const generateValue = (rowIdx, colIdx, metric, aggregation) => {
         const seed = rowIdx * 1000 + colIdx * 100 + metric.charCodeAt(0)
         const pseudoRandom = Math.sin(seed) * 10000
         const random = pseudoRandom - Math.floor(pseudoRandom)
         
+        let baseValue
         switch(metric) {
           case 'count':
-            return Math.floor(random * 50) + 10
+            baseValue = Math.floor(random * 50) + 10
+            break
           case 'latency':
-            return Math.floor(random * 400) + 100
+            baseValue = Math.floor(random * 400) + 100
+            break
           case 'cpu':
-            return (random * 5).toFixed(1)
+            baseValue = parseFloat((random * 5).toFixed(1))
+            break
           case 'memory':
-            return Math.floor(random * 150) + 50
+            baseValue = Math.floor(random * 150) + 50
+            break
           default:
-            return 0
+            baseValue = 0
+        }
+        
+        // Apply aggregation multiplier
+        switch(aggregation) {
+          case 'max':
+            return metric === 'cpu' ? (baseValue * 1.5).toFixed(1) : Math.floor(baseValue * 1.5)
+          case 'avg':
+            return metric === 'cpu' ? baseValue.toFixed(1) : baseValue
+          case 'min':
+            return metric === 'cpu' ? (baseValue * 0.6).toFixed(1) : Math.floor(baseValue * 0.6)
+          default:
+            return baseValue
         }
       }
       
       return rows.map((row, rowIdx) => ({
         label: row,
-        times: timeLabels.map((_, colIdx) => generateValue(rowIdx, colIdx, heatmapMetric))
+        times: timeLabels.map((_, colIdx) => generateValue(rowIdx, colIdx, heatmapMetric, heatmapAggregation))
       }))
-    }, [heatmapDimension, heatmapMetric])
+    }, [heatmapDimension, heatmapMetric, heatmapAggregation])
     
     // Sample queries for each dimension
     const sampleQueries = {
@@ -847,7 +865,7 @@ function App() {
               Time: {hoveredCell.time}
             </div>
             <div style={{ color: '#4C9AFF', fontWeight: '600' }}>
-              {metricLabels[heatmapMetric]}: {hoveredCell.value}{metricUnits[heatmapMetric]}
+              {metricLabels[heatmapMetric]} ({heatmapAggregation.charAt(0).toUpperCase() + heatmapAggregation.slice(1)}): {hoveredCell.value}{metricUnits[heatmapMetric]}
             </div>
           </div>
         )}
@@ -1626,6 +1644,23 @@ function App() {
                         <option value="latency">Latency</option>
                         <option value="cpu">CPU</option>
                         <option value="memory">Memory</option>
+                      </select>
+                      <select
+                        value={heatmapAggregation}
+                        onChange={(e) => setHeatmapAggregation(e.target.value)}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          border: '1px solid #d3dae6',
+                          borderRadius: '4px',
+                          backgroundColor: '#ffffff',
+                          color: '#1a1a1a',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="max">Max</option>
+                        <option value="avg">Avg</option>
+                        <option value="min">Min</option>
                       </select>
                     </>
                   )}
