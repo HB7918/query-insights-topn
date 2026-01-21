@@ -246,18 +246,10 @@ function App() {
       pie: { 
         innerSize: '60%', 
         dataLabels: { 
-          enabled: true, 
-          format: '{point.name}<br/>{point.percentage:.1f}%',
-          style: { color: '#1a1a1a', textOutline: 'none', fontSize: '12px' }
+          enabled: false
         },
-        showInLegend: true
+        showInLegend: false
       } 
-    },
-    legend: {
-      align: 'right',
-      verticalAlign: 'middle',
-      layout: 'vertical',
-      itemStyle: { color: '#1a1a1a', fontSize: '12px' }
     },
     series: [{
       name: 'Query Count',
@@ -1093,72 +1085,48 @@ function App() {
               </div>
             </div>
 
-            {/* Queries by Node - Full Width */}
+            {/* Queries by Node - Chart and Table Side by Side */}
             <div className="chart-container" style={{ marginBottom: '0.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
                 <h4 style={{ margin: 0, color: '#1a1a1a', fontSize: '16px', fontWeight: '600' }}>
                   Queries by Node
                 </h4>
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  <button
-                    onClick={() => setNodeViewMode('chart')}
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      border: '1px solid #d3dae6',
-                      borderRadius: '4px',
-                      backgroundColor: nodeViewMode === 'chart' ? '#646cff' : '#ffffff',
-                      color: nodeViewMode === 'chart' ? '#ffffff' : '#1a1a1a',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Chart
-                  </button>
-                  <button
-                    onClick={() => setNodeViewMode('table')}
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      border: '1px solid #d3dae6',
-                      borderRadius: '4px',
-                      backgroundColor: nodeViewMode === 'table' ? '#646cff' : '#ffffff',
-                      color: nodeViewMode === 'table' ? '#ffffff' : '#1a1a1a',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Table
-                  </button>
+              </div>
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+                {/* Pie Chart */}
+                <div style={{ flex: '0 0 400px' }}>
+                  <HighchartsReact highcharts={Highcharts} options={nodeChart} />
+                </div>
+                
+                {/* Table */}
+                <div style={{ flex: '1', minWidth: 0 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #d3dae6' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Node</th>
+                        <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Query Count</th>
+                        <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Percentage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nodeData.map((item, index) => {
+                        const total = nodeData.reduce((sum, d) => sum + d.y, 0)
+                        const percentage = ((item.y / total) * 100).toFixed(1)
+                        return (
+                          <tr key={index} style={{ borderBottom: '1px solid #f5f7fa' }}>
+                            <td style={{ padding: '12px', color: '#1a1a1a', fontSize: '12px' }}>
+                              <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: item.color, marginRight: '8px', borderRadius: '2px' }}></span>
+                              {item.name}
+                            </td>
+                            <td style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px' }}>{item.y}</td>
+                            <td style={{ padding: '12px', textAlign: 'right', color: '#69707d', fontSize: '12px' }}>{percentage}%</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              {nodeViewMode === 'chart' ? (
-                <HighchartsReact highcharts={Highcharts} options={nodeChart} />
-              ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid #d3dae6' }}>
-                      <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Node</th>
-                      <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Query Count</th>
-                      <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Percentage</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {nodeData.map((item, index) => {
-                      const total = nodeData.reduce((sum, d) => sum + d.y, 0)
-                      const percentage = ((item.y / total) * 100).toFixed(1)
-                      return (
-                        <tr key={index} style={{ borderBottom: '1px solid #f5f7fa' }}>
-                          <td style={{ padding: '12px', color: '#1a1a1a', fontSize: '12px' }}>
-                            <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: item.color, marginRight: '8px', borderRadius: '2px' }}></span>
-                            {item.name}
-                          </td>
-                          <td style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px' }}>{item.y}</td>
-                          <td style={{ padding: '12px', textAlign: 'right', color: '#69707d', fontSize: '12px' }}>{percentage}%</td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              )}
             </div>
 
             <div className="chart-container" style={{ marginBottom: '0.5rem' }}>
