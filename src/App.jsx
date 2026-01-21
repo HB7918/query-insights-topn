@@ -1522,7 +1522,7 @@ function App() {
             <div className="chart-container" style={{ marginBottom: '0.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <h4 style={{ margin: 0, color: '#1a1a1a', fontSize: '16px', fontWeight: '600' }}>
-                  Queries by
+                  Queries by {queriesByDimension.charAt(0).toUpperCase() + queriesByDimension.slice(1)}
                 </h4>
                 <select
                   value={queriesByDimension}
