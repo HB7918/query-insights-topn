@@ -115,11 +115,6 @@ const QueryList = ({ tokens = [], searchValue = '' }) => {
     }}>
       <h3 style={{ color: '#1a1a1a', marginBottom: '0.5rem', fontSize: '18px', fontWeight: '600' }}>Query List</h3>
       
-      {/* Match counter */}
-      <div style={{ marginBottom: '0.5rem', fontSize: '12px', color: '#69707d' }}>
-        {filteredData.length} {filteredData.length === 1 ? 'match' : 'matches'}
-      </div>
-      
       {/* Table */}
       <div style={{ overflowX: 'auto', border: '1px solid #d3dae6', borderRadius: '4px' }}>
         <table style={{ 
