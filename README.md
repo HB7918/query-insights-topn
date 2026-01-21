@@ -1,5 +1,7 @@
 # Query Insights - Top N Queries Dashboard
 
+<!-- Main Branch Version -->
+
 A React-based dashboard for analyzing and visualizing your most frequently executed database queries.
 
 ## Features
