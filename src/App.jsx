@@ -1468,16 +1468,6 @@ function App() {
           )}
         </div>
       </div>
-                fontWeight: '500',
-                whiteSpace: 'nowrap',
-                flexShrink: 0
-              }}
-            >
-              Clear filters
-            </button>
-          )}
-        </div>
-      </div>
 
       <div className="content">
         <div className="charts-view">
@@ -1701,9 +1691,9 @@ function App() {
           </div>
         </div>
 
-      <DrillDownModal />
-    </div>
-  )
-}
+        <DrillDownModal />
+      </div>
+    )
+  }
 
 export default App
