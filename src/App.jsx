@@ -624,12 +624,12 @@ function App() {
   // 6. Custom Heatmap using HTML/CSS to match the image style
   const HeatmapComponent = () => {
     const dimensionData = {
-      index: ['orders-*', 'users-*', 'logs-*', 'metrics-*'],
-      node: ['node-1', 'node-2', 'node-3', 'node-4'],
-      user: ['user_admin', 'user_analyst', 'user_dev', 'user_guest'],
-      role: ['admin', 'analyst', 'developer', 'viewer'],
-      wlmGroup: ['group1', 'group2', 'group3', 'group4'],
-      shape: ['shape_A', 'shape_B', 'shape_C', 'shape_D']
+      index: ['orders-*', 'users-*', 'logs-*', 'metrics-*', 'events-*', 'products-*', 'inventory-*', 'payments-*', 'analytics-*', 'audit-*'],
+      node: ['node-1', 'node-2', 'node-3', 'node-4', 'node-5', 'node-6', 'node-7', 'node-8', 'node-9', 'node-10'],
+      user: ['user_admin', 'user_analyst', 'user_dev', 'user_guest', 'user_manager', 'user_support', 'user_qa', 'user_ops', 'user_data', 'user_api'],
+      role: ['admin', 'analyst', 'developer', 'viewer', 'manager', 'support', 'qa_engineer', 'ops_engineer', 'data_scientist', 'api_user'],
+      wlmGroup: ['group1', 'group2', 'group3', 'group4', 'group5', 'group6', 'group7', 'group8', 'group9', 'group10'],
+      shape: ['shape_A', 'shape_B', 'shape_C', 'shape_D', 'shape_E', 'shape_F', 'shape_G', 'shape_H', 'shape_I', 'shape_J']
     }
 
     const metricUnits = {
@@ -655,7 +655,7 @@ function App() {
       shape: 'Shape'
     }
 
-    const timeLabels = ['10:00', '10:15', '10:30', '10:45', '11:00', '11:15', '11:30', '11:45', '12:00', '12:15', '12:30', '12:45', '13:00']
+    const timeLabels = ['10:00', '10:15', '10:30', '10:45', '11:00', '11:15', '11:30', '11:45', '12:00', '12:15', '12:30', '12:45', '13:00', '13:15', '13:30', '13:45', '14:00', '14:15', '14:30', '14:45', '15:00', '15:15', '15:30']
     
     // Generate heatmap data based on selected dimension, metric, and aggregation - memoized to prevent regeneration
     const heatmapData = useMemo(() => {
@@ -776,8 +776,8 @@ function App() {
           {heatmapData.map((row, rowIdx) => (
             <>
               <div key={row.label} style={{ 
-                padding: '8px', 
-                fontSize: '11px', 
+                padding: '4px 6px', 
+                fontSize: '10px', 
                 color: '#1a1a1a',
                 backgroundColor: '#f5f7fa',
                 display: 'flex',
@@ -790,9 +790,9 @@ function App() {
                 <div 
                   key={`${row.label}-${colIdx}`}
                   style={{ 
-                    padding: '15px 8px',
+                    padding: '4px 4px',
                     textAlign: 'center',
-                    fontSize: '10px',
+                    fontSize: '9px',
                     color: '#000000',
                     backgroundColor: getColor(value, heatmapMetric),
                     border: '1px solid #ffffff',
@@ -829,9 +829,9 @@ function App() {
           <div></div>
           {timeLabels.map(time => (
             <div key={`bottom-${time}`} style={{ 
-              padding: '8px', 
+              padding: '4px 6px', 
               textAlign: 'center', 
-              fontSize: '11px', 
+              fontSize: '10px', 
               color: '#1a1a1a',
               backgroundColor: '#f5f7fa',
               fontWeight: '600'
