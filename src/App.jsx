@@ -28,6 +28,16 @@ function App() {
   const [hoveredCell, setHoveredCell] = useState(null)
   const [activeTab, setActiveTab] = useState('topN')
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [queriesByDimension, setQueriesByDimension] = useState('node')
+  
+  // Query filter states
+  const [searchValue, setSearchValue] = useState('')
+  const [tokens, setTokens] = useState([])
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [currentStep, setCurrentStep] = useState('properties')
+  const [selectedProperty, setSelectedProperty] = useState(null)
+  const [selectedOperator, setSelectedOperator] = useState(null)
+  const [valueInput, setValueInput] = useState('')
 
   // Handle refresh
   const handleRefresh = () => {
@@ -36,6 +46,123 @@ function App() {
     setTimeout(() => {
       setIsRefreshing(false)
     }, 1000)
+  }
+
+  // Query filter properties and options
+  const filteringProperties = [
+    { key: 'type', propertyLabel: 'Type', type: 'enum' },
+    { key: 'queryCount', propertyLabel: 'Query Count', type: 'number' },
+    { key: 'timestamp', propertyLabel: 'Timestamp', type: 'date' },
+    { key: 'latency', propertyLabel: 'Latency', type: 'number' },
+    { key: 'cpuTime', propertyLabel: 'CPU Time', type: 'number' },
+    { key: 'memoryUsage', propertyLabel: 'Memory Usage', type: 'number' },
+    { key: 'indices', propertyLabel: 'Indices', type: 'enum' },
+    { key: 'searchType', propertyLabel: 'Search Type', type: 'enum' },
+    { key: 'coordinatorNode', propertyLabel: 'Coordinator Node', type: 'enum' },
+    { key: 'totalShards', propertyLabel: 'Total Shards', type: 'number' },
+  ]
+
+  const filteringOptions = [
+    { propertyKey: 'type', value: 'Group' },
+    { propertyKey: 'type', value: 'Search' },
+    { propertyKey: 'type', value: 'Aggregation' },
+    { propertyKey: 'type', value: 'Match' },
+    { propertyKey: 'searchType', value: 'DFS' },
+    { propertyKey: 'searchType', value: 'Query Then Fetch' },
+    { propertyKey: 'searchType', value: 'Query And Fetch' },
+    { propertyKey: 'coordinatorNode', value: 'node1' },
+    { propertyKey: 'coordinatorNode', value: 'node2' },
+    { propertyKey: 'coordinatorNode', value: 'node3' },
+    { propertyKey: 'indices', value: 'index1' },
+    { propertyKey: 'indices', value: 'index2' },
+    { propertyKey: 'indices', value: 'index3' },
+  ]
+
+  const operators = [
+    { value: '=', label: 'Equals', symbol: '=', types: ['enum', 'number', 'date'] },
+    { value: '!=', label: 'Does not equal', symbol: '!=', types: ['enum', 'number', 'date'] },
+    { value: ':', label: 'Contains', symbol: ':', types: ['enum'] },
+    { value: '!:', label: 'Does not contain', symbol: '!:', types: ['enum'] },
+    { value: '^', label: 'Starts with', symbol: '^', types: ['enum'] },
+    { value: '!^', label: 'Does not start with', symbol: '!^', types: ['enum'] },
+    { value: '>', label: 'Greater than', symbol: '>', types: ['number', 'date'] },
+    { value: '<', label: 'Less than', symbol: '<', types: ['number', 'date'] },
+    { value: '>=', label: 'Greater than or equal', symbol: '>=', types: ['number', 'date'] },
+    { value: '<=', label: 'Less than or equal', symbol: '<=', types: ['number', 'date'] },
+  ]
+
+  const handlePropertySelect = (property) => {
+    setSelectedProperty(property)
+    setCurrentStep('operators')
+    setSearchValue('')
+  }
+
+  const handleOperatorSelect = (operator) => {
+    setSelectedOperator(operator)
+    setCurrentStep('values')
+    setValueInput('')
+  }
+
+  const handleValueSelect = (value) => {
+    const newToken = {
+      property: selectedProperty,
+      operator: selectedOperator,
+      value: value
+    }
+    
+    setTokens([...tokens, newToken])
+    setSearchValue('')
+    setCurrentStep('properties')
+    setSelectedProperty(null)
+    setSelectedOperator(null)
+    setIsPopoverOpen(false)
+  }
+
+  const handleFreeTextValue = () => {
+    if (valueInput.trim()) {
+      const newToken = {
+        property: selectedProperty,
+        operator: selectedOperator,
+        value: valueInput.trim()
+      }
+      
+      setTokens([...tokens, newToken])
+      setSearchValue('')
+      setValueInput('')
+      setCurrentStep('properties')
+      setSelectedProperty(null)
+      setSelectedOperator(null)
+      setIsPopoverOpen(false)
+    }
+  }
+
+  const handleRemoveToken = (index) => {
+    const newTokens = tokens.filter((_, i) => i !== index)
+    setTokens(newTokens)
+  }
+
+  const handleClearAll = () => {
+    setTokens([])
+    setSearchValue('')
+    setIsPopoverOpen(false)
+  }
+
+  const getPropertyOptions = () => {
+    return filteringProperties
+      .filter(prop => 
+        prop.propertyLabel.toLowerCase().includes(searchValue.toLowerCase())
+      )
+  }
+
+  const getOperatorOptions = () => {
+    return operators.filter(op => op.types.includes(selectedProperty?.type || 'enum'))
+  }
+
+  const getValueOptions = () => {
+    if (!selectedProperty || selectedProperty.type !== 'enum') return []
+    
+    return filteringOptions
+      .filter(opt => opt.propertyKey === selectedProperty.key)
   }
 
   // Format date for display
@@ -224,16 +351,33 @@ function App() {
     }]
   }
 
-  // 2. Node Distribution - Donut Chart
-  const nodeData = [
-    { name: 'Node-1', y: 450, color: '#4C9AFF' },
-    { name: 'Node-2', y: 300, color: '#FF991F' },
-    { name: 'Node-3', y: 250, color: '#36B37E' },
-    { name: 'Node-4', y: 200, color: '#9C27B0' },
-    { name: 'Node-5', y: 150, color: '#FF6B6B' }
-  ]
+  // 2. Distribution Data - Node, User, Index
+  const distributionData = {
+    node: [
+      { name: 'Node-1', y: 450, color: '#4C9AFF' },
+      { name: 'Node-2', y: 300, color: '#FF991F' },
+      { name: 'Node-3', y: 250, color: '#36B37E' },
+      { name: 'Node-4', y: 200, color: '#9C27B0' },
+      { name: 'Node-5', y: 150, color: '#FF6B6B' }
+    ],
+    user: [
+      { name: 'user_admin', y: 520, color: '#4C9AFF' },
+      { name: 'user_analyst', y: 380, color: '#FF991F' },
+      { name: 'user_dev', y: 290, color: '#36B37E' },
+      { name: 'user_guest', y: 160, color: '#9C27B0' }
+    ],
+    index: [
+      { name: 'orders-*', y: 380, color: '#4C9AFF' },
+      { name: 'users-*', y: 280, color: '#FF991F' },
+      { name: 'logs-*', y: 340, color: '#36B37E' },
+      { name: 'metrics-*', y: 220, color: '#9C27B0' },
+      { name: 'events-*', y: 180, color: '#FF6B6B' }
+    ]
+  }
 
-  const nodeChart = {
+  const currentDistributionData = distributionData[queriesByDimension]
+
+  const distributionChart = {
     chart: { 
       type: 'pie', 
       height: 300,
@@ -253,7 +397,7 @@ function App() {
     },
     series: [{
       name: 'Query Count',
-      data: nodeData
+      data: currentDistributionData
     }]
   }
 
@@ -957,42 +1101,299 @@ function App() {
       </header>
 
       <div className="controls">
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '16px'
-        }}>
-          {/* Date Range Picker */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '8px 12px',
-              border: '1px solid #d3dae6',
-              borderRadius: '4px',
-              backgroundColor: '#ffffff',
-              cursor: 'pointer'
+        {/* Search Bar - Full Width Row */}
+        <div style={{ marginBottom: '12px', width: '100%', maxWidth: '1200px' }}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search queries..."
+              value={searchValue}
+              onChange={(e) => {
+                setSearchValue(e.target.value)
+                setIsPopoverOpen(true)
+                if (!selectedProperty) setCurrentStep('properties')
+              }}
+              onFocus={() => {
+                setIsPopoverOpen(true)
+                if (!selectedProperty) setCurrentStep('properties')
+              }}
+              style={{
+                width: '100%',
+                padding: '12px 12px 12px 42px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #d3dae6',
+                borderRadius: '4px',
+                color: '#1a1a1a',
+                fontSize: '16px',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+            <span style={{
+              position: 'absolute',
+              left: '14px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              fontSize: '20px',
+              color: '#69707d'
             }}>
-              <span style={{ fontSize: '18px', color: '#0079D3' }}>📅</span>
-              <span style={{ fontSize: '14px', color: '#1a1a1a', whiteSpace: 'nowrap' }}>
-                {formatDateDisplay(startDate)} → now
-              </span>
+              🔍
+            </span>
+
+            {/* Popover - Aligned to search box */}
+            {isPopoverOpen && (
+              <>
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 999
+                  }}
+                  onClick={() => {
+                    setIsPopoverOpen(false)
+                    setCurrentStep('properties')
+                    setSelectedProperty(null)
+                    setSelectedOperator(null)
+                    setValueInput('')
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: '4px',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #d3dae6',
+                  borderRadius: '4px',
+                  maxHeight: '400px',
+                  overflow: 'auto',
+                  zIndex: 1000,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                }}>
+                  {currentStep === 'properties' && (
+                    <>
+                      <div style={{ padding: '8px 12px', borderBottom: '1px solid #d3dae6', backgroundColor: '#f5f7fa' }}>
+                        <strong style={{ fontSize: '12px', color: '#69707d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Properties</strong>
+                      </div>
+                      {getPropertyOptions().map((prop, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handlePropertySelect(prop)}
+                          style={{
+                            padding: '10px 12px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            color: '#1a1a1a',
+                            borderBottom: index < getPropertyOptions().length - 1 ? '1px solid #f5f7fa' : 'none',
+                            transition: 'background-color 0.15s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f7fa'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          {prop.propertyLabel}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  
+                  {currentStep === 'operators' && (
+                    <>
+                      <div style={{ padding: '8px 12px', borderBottom: '1px solid #d3dae6', backgroundColor: '#f5f7fa' }}>
+                        <strong style={{ fontSize: '12px', color: '#69707d' }}>
+                          Use: "{selectedProperty?.propertyLabel}"
+                        </strong>
+                      </div>
+                      <div style={{ padding: '8px 12px', borderBottom: '1px solid #d3dae6', backgroundColor: '#f5f7fa' }}>
+                        <strong style={{ fontSize: '12px', color: '#69707d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Operators</strong>
+                      </div>
+                      {getOperatorOptions().map((op, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleOperatorSelect(op)}
+                          style={{
+                            padding: '10px 12px',
+                            cursor: 'pointer',
+                            borderBottom: index < getOperatorOptions().length - 1 ? '1px solid #f5f7fa' : 'none',
+                            transition: 'background-color 0.15s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f7fa'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <div style={{ color: '#0079D3', fontWeight: 500, fontSize: '14px' }}>
+                            {selectedProperty?.propertyLabel} {op.symbol}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#69707d', marginTop: '2px' }}>{op.label}</div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  
+                  {currentStep === 'values' && (
+                    <>
+                      {selectedProperty?.type === 'number' || selectedProperty?.type === 'date' ? (
+                        <div style={{ padding: '12px' }}>
+                          <div style={{ marginBottom: '8px', fontSize: '12px', color: '#69707d' }}>
+                            <strong>Use: "{selectedProperty?.propertyLabel} {selectedOperator?.symbol}"</strong>
+                          </div>
+                          <div style={{ marginBottom: '8px', fontSize: '12px', color: '#69707d' }}>
+                            Enter {selectedProperty.type === 'date' ? 'date (YYYY-MM-DD)' : 'numeric value'}:
+                          </div>
+                          <input
+                            type="text"
+                            placeholder={selectedProperty.type === 'date' ? '2024-01-14' : '100'}
+                            value={valueInput}
+                            onChange={(e) => setValueInput(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') handleFreeTextValue()
+                            }}
+                            autoFocus
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              backgroundColor: '#ffffff',
+                              border: '1px solid #d3dae6',
+                              borderRadius: '4px',
+                              color: '#1a1a1a',
+                              fontSize: '14px',
+                              marginBottom: '8px',
+                              outline: 'none'
+                            }}
+                          />
+                          <button
+                            onClick={handleFreeTextValue}
+                            disabled={!valueInput.trim()}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              backgroundColor: valueInput.trim() ? '#0079D3' : '#d3dae6',
+                              border: 'none',
+                              borderRadius: '4px',
+                              color: '#ffffff',
+                              cursor: valueInput.trim() ? 'pointer' : 'not-allowed',
+                              fontSize: '14px',
+                              fontWeight: '500'
+                            }}
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ padding: '8px 12px', borderBottom: '1px solid #d3dae6', backgroundColor: '#f5f7fa' }}>
+                            <strong style={{ fontSize: '12px', color: '#69707d' }}>
+                              Use: "{selectedProperty?.propertyLabel} {selectedOperator?.symbol}"
+                            </strong>
+                          </div>
+                          <div style={{ padding: '8px 12px', borderBottom: '1px solid #d3dae6', backgroundColor: '#f5f7fa' }}>
+                            <strong style={{ fontSize: '12px', color: '#69707d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                              {selectedProperty?.propertyLabel} values
+                            </strong>
+                          </div>
+                          {getValueOptions().map((opt, index) => (
+                            <div
+                              key={index}
+                              onClick={() => handleValueSelect(opt.value)}
+                              style={{
+                                padding: '10px 12px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                color: '#1a1a1a',
+                                borderBottom: index < getValueOptions().length - 1 ? '1px solid #f5f7fa' : 'none',
+                                transition: 'background-color 0.15s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f7fa'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              {selectedProperty?.propertyLabel} {selectedOperator?.symbol} {opt.value}
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Tokens - Below search bar */}
+          {tokens.length > 0 && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '8px' }}>
+              {tokens.map((token, index) => (
+                <span
+                  key={index}
+                  style={{
+                    backgroundColor: '#E6F1FF',
+                    border: '1px solid #0079D3',
+                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    color: '#0079D3',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontWeight: '500'
+                  }}
+                >
+                  {token.property.propertyLabel} {token.operator.symbol} {token.value}
+                  <button
+                    onClick={() => handleRemoveToken(index)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#0079D3',
+                      cursor: 'pointer',
+                      padding: '0',
+                      fontSize: '16px',
+                      lineHeight: '1',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
             </div>
-            
-            {/* Hidden date inputs for functionality */}
-            <div style={{ display: 'none' }}>
-              <input
-                type="datetime-local"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-              <input
-                type="datetime-local"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
+          )}
+        </div>
+
+        {/* Date Range, Refresh, and Clear Filters - Second Row */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
+          {/* Date Range Picker */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            padding: '8px 12px',
+            border: '1px solid #d3dae6',
+            borderRadius: '4px',
+            backgroundColor: '#ffffff',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            flexShrink: 0
+          }}>
+            <span style={{ fontSize: '18px', color: '#0079D3' }}>📅</span>
+            <span style={{ fontSize: '14px', color: '#1a1a1a' }}>
+              {formatDateDisplay(startDate)} → now
+            </span>
+          </div>
+          
+          {/* Hidden date inputs for functionality */}
+          <div style={{ display: 'none' }}>
+            <input
+              type="datetime-local"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <input
+              type="datetime-local"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
           </div>
 
           {/* Refresh Button */}
@@ -1013,7 +1414,8 @@ function App() {
               cursor: isRefreshing ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
               opacity: isRefreshing ? 0.6 : 1,
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              flexShrink: 0
             }}
             onMouseEnter={(e) => {
               if (!isRefreshing) {
@@ -1033,6 +1435,47 @@ function App() {
             </span>
             Refresh
           </button>
+
+          {/* Clear Filters Button */}
+          {tokens.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '500',
+                border: '1px solid #d3dae6',
+                borderRadius: '4px',
+                backgroundColor: '#ffffff',
+                color: '#1a1a1a',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f5f7fa'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff'
+              }}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      </div>
+                fontWeight: '500',
+                whiteSpace: 'nowrap',
+                flexShrink: 0
+              }}
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -1085,17 +1528,34 @@ function App() {
               </div>
             </div>
 
-            {/* Queries by Node - Chart and Table Side by Side */}
+            {/* Queries by - Chart and Table Side by Side */}
             <div className="chart-container" style={{ marginBottom: '0.5rem' }}>
-              <div style={{ marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <h4 style={{ margin: 0, color: '#1a1a1a', fontSize: '16px', fontWeight: '600' }}>
-                  Queries by Node
+                  Queries by
                 </h4>
+                <select
+                  value={queriesByDimension}
+                  onChange={(e) => setQueriesByDimension(e.target.value)}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    border: '1px solid #d3dae6',
+                    borderRadius: '4px',
+                    backgroundColor: '#ffffff',
+                    color: '#1a1a1a',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="node">Node</option>
+                  <option value="user">User</option>
+                  <option value="index">Index</option>
+                </select>
               </div>
               <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
                 {/* Pie Chart */}
                 <div style={{ flex: '0 0 400px' }}>
-                  <HighchartsReact highcharts={Highcharts} options={nodeChart} />
+                  <HighchartsReact highcharts={Highcharts} options={distributionChart} />
                 </div>
                 
                 {/* Table */}
@@ -1103,14 +1563,16 @@ function App() {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid #d3dae6' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Node</th>
+                        <th style={{ padding: '12px', textAlign: 'left', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>
+                          {queriesByDimension.charAt(0).toUpperCase() + queriesByDimension.slice(1)}
+                        </th>
                         <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Query Count</th>
                         <th style={{ padding: '12px', textAlign: 'right', color: '#1a1a1a', fontSize: '12px', fontWeight: '600' }}>Percentage</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {nodeData.map((item, index) => {
-                        const total = nodeData.reduce((sum, d) => sum + d.y, 0)
+                      {currentDistributionData.map((item, index) => {
+                        const total = currentDistributionData.reduce((sum, d) => sum + d.y, 0)
                         const percentage = ((item.y / total) * 100).toFixed(1)
                         return (
                           <tr key={index} style={{ borderBottom: '1px solid #f5f7fa' }}>
@@ -1235,7 +1697,7 @@ function App() {
               )}
             </div>
 
-            <QueryList />
+            <QueryList tokens={tokens} searchValue={searchValue} />
           </div>
         </div>
 
