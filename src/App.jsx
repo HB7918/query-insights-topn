@@ -763,8 +763,8 @@ function App() {
     }
     
     return (
-      <div style={{ padding: '20px', backgroundColor: '#ffffff', borderRadius: '8px', position: 'relative' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '100px repeat(13, 1fr)', gap: '1px', backgroundColor: '#d3dae6' }}>
+      <div style={{ padding: '20px', backgroundColor: '#ffffff', borderRadius: '8px', position: 'relative', overflowX: 'auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '100px repeat(23, 50px)', gap: '1px', backgroundColor: '#d3dae6', minWidth: 'fit-content' }}>
           {/* Empty top-left corner */}
           <div></div>
           {/* Empty header row for top */}
